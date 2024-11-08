@@ -148,3 +148,9 @@ python3 solver.py
 
 
 ![image](https://github.com/user-attachments/assets/f9687a27-24e8-4230-b8a7-4aa0141db6eb)
+
+
+### GG We did it
+
+![image](https://github.com/user-attachments/assets/ad93791e-fc88-4fe8-8f8a-9eae462643ab)
+
