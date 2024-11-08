@@ -22,6 +22,7 @@ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
 
 
 **Leak Libc Base**
+
 ![image](https://github.com/user-attachments/assets/47b611e2-a27d-4139-a2fa-ccf25b80deca)
 
 
@@ -77,6 +78,7 @@ sys.stdout.buffer.write(payload)
 ```
 ./lab9 $(python3 solver.py)
 ```
+
 ![image](https://gist.github.com/user-attachments/assets/1c6f15b4-93d0-4cca-8da3-c1af28b58b22)
 
 
